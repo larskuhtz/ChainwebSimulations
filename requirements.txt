@@ -3,3 +3,7 @@ simpy
 numpy
 matplotlib
 scipy
+igraph
+pandas
+seaborn
+tabulate
