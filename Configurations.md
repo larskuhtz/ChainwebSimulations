@@ -164,14 +164,23 @@ $$
 minable(C) = \{c \in \Chains \mid minable(C,c)\}
 $$
 
-For configurations $C, D$ we say that $C$ is a predecessor of $D$, denoted as $C
-\prec D$, if and only if there exists a chain $c \in \Chains$ such that
-$mine(C,d) = D$. Note that the $c$ in the definition of $\prec$ is unique.
+For configurations $C, D$ and a chain $c \in \Chains$ we say that $C$ is a
+$c$-predecessor of $D$, denoted as $C \prec^c D$, if and only if $mine(C,d) =
+D$. Note that $c$ is unique in this defintion. We can thus also omit $c$ and
+define $\prec \subseteq \Confs \times \Confs$ as $C \prec D$ if and only there
+exists $c$ such that $C \prec^c D$. We call $D$ a ($c$-)successor of $C$ if
+and only if $C \prec D$ ($C \prec^c D$, respectively).
 
 We define reachability on configurations as the reflexive and transitive closure
 over $\prec$. A configuration $D$ is reachable from a configuration $C$ if and
 only if $C = D$ or there exist a configuration $E$ such that $C \prec E$ and $D$
 is reachable from $E$.
+
+For a sequence $c_0, \dots, c_{n-1}\,n \in \mathbb{N}$ of chains and
+configurations $C$ and $D$ we say that $D$ is $c_0\dots c_{n-1}$-reachable from
+$C$, denoted as $C \prec^{c_0\dots c_{n-1}} D$, if and only if there exist $C_i,
+\dots, C_n$ for each $0 \leq i < n$ it holds that $C = C_0$, $D = C_n$, and $C_i
+\prec^{c_i} C_{i+1}$.
 
 The configuration $\bold{0}$, where all chains are at the same height, is the
 unique configuration in which all chains are minable.
@@ -186,21 +195,20 @@ assume that a configutration is a reachable configuration.
 
 # Configuration Transition System
 
-We can now define a transition system on the set $\Confs(\Graph)$ of all
-reachable configurations of a chain graph as the tuple $(\Confs(\Graph),
-\prec)$, where $\Confs(\Graph)$ is the set of states and $\prec$ is the
-transition relation.
+The transition system on the set $\Confs(\Graph)$ of all reachable
+configurations of a chain graph is the tuple $(\Confs(\Graph), \prec)$, where
+$\Confs(\Graph)$ is the set of states and $\prec$ is the transition relation.
 
-One important property of this transition system is that that transition graph
-is strongly connected, i.e. each state can be reached from each state. In
-particular, each reachable configuration is mineable and the configuration
+One important property of this transition system is that transition graph is
+strongly connected, i.e. each state can be reached from each state. To see this,
+note that each reachable configuration is mineable and the configuration
 $\bold{0}$ can be reached from each state. (Note that each state can be reached
 from $\bold{0}$ by definition of $\Confs(\Graph)$.) (TODO: provide a proof) We
 can thus omit the initial configuration from the definition of the transition
 system.
 
-Another property is that the degree of the the transition graph is bounded by
-the number of chains $\abs{\Chains}$. This follows from the definition of
+Another property is that the degree of the transition graph is bounded by the
+number of chains $\abs{\Chains}$. This follows directly from the definition of
 $mineable$. There is exactly one successor configuration for each minable chain.
 
 We also note that the absolute values of the height differences between chains
@@ -208,65 +216,106 @@ are bounded by the length of the shortest path between the respective chains in
 $\Graph$. For adjacent chains the absolute values are bounded by one. In
 general, the diameter of $\Graph$ bounds all absolute values in the height
 difference matrix of a configuration. Because $\Graph$ is connected it follows
-that $\Confs(\Graph)$ is finite. We will formalize and proof this note later on.
+that $\Confs(\Graph)$ is finite. We will formalize and proof this property later
+on.
+
+## Labeled Transition Systems
 
 We can collect additional properties of configurations of a chainweb by 
 labeling the transition system and observing the values of the labels.
 
-For instance, we can label each transition with the respective chain that is
-mined in the transition. Let $\prec^\cdot \subseteq (\Confs \times \Chains
-\times \Confs)$ be defined by $C \prec^c D$ if and only if $mine(C,c) = D$.
-Note, that $C \prec^c D$ if and only if $\exists c \in \Chains, C \prec C$.
-Each run labeled transition system $(\Confs(\Graph), \Chains, \prec^\cdot)$
-records the sequence of mined chains that lead from the starting configuration
-of the run to the final configuraiton of the run.
+The most straightforward labeling is to label each transition with the respective
+chain that facilitates this transition: $(\Confs(\Graph), \Chains, \prec^\cdot)$,
+where $\Confs(Graph)$ again is the set of states, $\Chains$ is that set of labels,
+and $prec^\cdot$ is the ternary transition relation.
+Each run of this labeled transition system records the sequence of mined chains
+and the (infinit) set of all possible (infinite) runs represents the set of all
+orders in which chains can be mined.
 
-Other interesting labelings include is set or the count of minable chains or in
-the source configuration of each transition. We may for instance investigate
-whether for a given chain graph, all chains mineable equally often, or whether
-some chains are minable more often than others. We may also compute the
-histogram of the number of minable chains for all configurations. We will 
-explorer different ways to measure these properties further down.
+Other interesting labelings include is sets of minable chains in the source
+configuration or just the count of mineable chains.
+
+We can use those labeled transition systems, for instance, to investigate
+whether for a given chain graph, all chains are mineable equally often, or
+whether some chains are minable more often than others. The answer to this
+question may inform possible strategies for miners or of block rewards in a
+blockchain based on Chainweb consensus. We also like to compute the histogram of
+the number of minable chains over all configurations. We will explorer different
+ways to measure these properties further down.
 
 # Language of a Chain Graph
 
 Above we noted that the configuration transition system is finite and that it
 can be labeled to record the sequence of mined chains that lead from one
-configuration to another. This implies that the set of all mining sequences is a
-language that can be recognized by a finite automaton.
+configuration to another. This implies that the set of all sequences chains that
+can be mined in a Chainweb for a given chain graph is a language that can be
+recognized by a finite automaton.
 
 We are now going formalize that language which leads to a syntactic
-characterization of the set of configurations for a given chain graph.
+characterization of the set of configurations for a given chain graph and their
+properties.
 
-The language $\def\lang#1{\mathcal{L}({#1})} \lang{\Graph}$ of a chain
-graph is the set of all $\omega$-words over the alphabet $\Chains$ in the
-following $\omega$-regular:
+For a pair of adjacent chains $a,b \in Chains$, $\{a,b\} \in \Edges$, each of
+$a$ and $b$ can be ahead at most one step of the the other chain. This means
+that each word of the language must satisfy that
+*   if an $a$ happens first there must be a $b$ before there can be another $a$
+    and, conversely,
+*   if a $b$ happens first there must be an $a$ before $b$ can happen again.
+*   In between any other chain can occur.
+This is is expressed by the following regular expression:
 
 $$
-\bigwedge_{(a,b) \in \Edges}
-\left((a(\overline{a|b})^*b)|(b(\overline{a|b})^*a)\right)^\omega
+    \underbrace{(\overline{a|b})}_{\text{any other chain}}
+    \mid
+        \underbrace{(a(\overline{a|b})^*b)}_{\substack{
+            \text{if $a$ is first it} \\
+            \text{is followed by $b$} \\
+            \text{before another $a$}
+        }}
+        \mid
+        \underbrace{(b(\overline{a|b})^*a)}_{\substack{
+            \text{if $b$ is first it} \\ 
+            \text{is followed by $a$} \\
+            \text{before another $b$}
+        }}
 $$
 
-Example:
+Note that this expression does not accept the empty word. This pattern repeats
+infinitely often, resulting in the following $\omega$-regular expression:
+
+$$
+\left((\overline{a|b})|(a(\overline{a|b})^*b)|(b(\overline{a|b})^*a)\right)^\omega
+$$
+
+The overall language must satisfy the respective expression for each edge in the
+graph. The $\omega$-language $\def\lang#1{\mathcal{L}({#1})} \lang{\Graph}$ is
+the intersection of the languages for all edges in $\Graph$:
+
+$$
+\bigcap_{(a,b) \in \Edges}
+\left((\overline{a|b})|(a(\overline{a|b})^*b)|(b(\overline{a|b})^*a)\right)^\omega
+$$
+
+Example for a word in $\lang{\Graph}$:
 
 $$
 a b c a c b b a a c c b b\\
 $$
 
-The automaton for this language is constructed by first defining a Büchi
-automaton for each edge $(a,b) \in \Edges$ corresponding to the respective
-conjunct in the regular expression.
+Accordingly, the Büchi automaton for $\lang{\Graph}$ is constructed as the
+alternating Büchi automaton that for each edge $(a,b) \in \Edges$ contains the
+following subautomaton.
 
 ```tikz
 \documentclass[crop,tikz]{standalone}
 \usetikzlibrary {math,automata,positioning}
 \begin{document}
   \begin{tikzpicture}[shorten >=1pt,auto,initial text=]
-    \node[state,initial,accepting] (q_0) {$\{ab\}$};
-    \node[state] (q_1) [above=of q_0] {$(ab)$};
-    \node[state] (q_2) [below=of q_0] {$(ba)$};
-    \path[->] 
-      (q_0) 
+    \node[state,initial,accepting] (q_0) {$ab_=$};
+    \node[state] (q_1) [above=of q_0] {$ab_>$};
+    \node[state] (q_2) [below=of q_0] {$ab_<$};
+    \path[->]
+      (q_0)
         edge [bend left] node {$a$} (q_1)
         edge [bend left] node [swap] {$b$} (q_2)
         edge [loop right] node {$\overline{a|b}$} ()
@@ -281,41 +330,57 @@ conjunct in the regular expression.
 \end{document}
 ```
 
-The automaton for $\lang{\Graph}$ is the intersection of of all those
-automata.
+Note that each conjunctive component is itself deterministic.
 
-An interesting property of this automaton is that any state could be used as
-singleton Büchi acceptance condition while still accepting the same language.
-(TODO: provide a proof.)
+> (Alternatively, we could define the language temporal logic formula, or
+> algebraically, e.g. through as a submonoid of the trace monoid implied by the
+> dependency relation on chains.)
 
-(Alternatively, we could define the language temporal logic formula, or
-algebraically, e.g. through as a submonoid of the trace monoid implied by the
-dependency relation on chains.)
+*Theorem*: The language is non-empty.
 
-Theorem: the $\lang{\Graph}$ is exactly the language produced
-by the configuration transition system. (TODO, define that language via
-a Moore automaton over the configuration transition system.)
+*Proof*: Let $\{c_0, \dots, c_{n-1}\} = \Chains$, then the word
+$(c_0\dots c_{n-1})^\omega$ is accepted by the alternating Büchi automaton
+for $\lang{\Graph}$.
 
-Theorem: The states of the automaton are exactly the configurations, i.e.
-they encode the height difference between chains.
+TODO:
+*   Is above automaton minimal?
+*   what is the minimal BDFA?
+*   What is the minimal BNFA?
+*   Is the language starfree?
+*   characterize the language via its safety and liveness properties.
 
-> What would be the minimal automaton that perserves the number of
-> minable chains for each state? There are transitions that do not change
-> the number of minable chains. How can we characterize those?
+*Theorem*: In this automaton any of the accepting states could be used as
+singleton Büchi acceptance condition while still accepting the same language. In
+other words each accepting run visits each accepting state infinitely often.
+
+*Theorem*: The $\lang{\Graph}$ is exactly the language produced by the
+configuration transition system. (TODO, define that language via a Moore
+automaton over the configuration transition system.)
+
+*Theorem*: The states of the automaton are exactly the configurations, i.e. they
+encode the height difference between chains.
+
+TODO: 
+*   Consider quotient languages for interesting properties, like number
+    of mineable chains, set of mineable chains, and possibly other properties.
+
+> What would be the minimal automaton that preserves the number of
+> mineable chains for each state? There are transitions that do not change
+> the number of mineable chains. How can we characterize those?
 
 ## Remarks
 
-Note that the definition of a configuration and the minining function does not
+Note that the definition of a configuration and the mining function does not
 depend on the graph.
 
-Only the definition of minability is constrained by the chain graph $\Graph$.
+Only the definition of mineability is constrained by the chain graph $\Graph$.
 
 It is a non-trivial problem to determine or count the reachable
 configurations for a given Graph.
 Another interesting question is what connected graph would maximize the
 number of configurations.
 
-We are praticularly intrested in graphs that maximize the (out-)degree
+We are particularly interested in graphs that maximize the (out-)degree
 of the configuration transition graph, because that determines
 how many chains are mineable in concurrently.
 
