@@ -7,3 +7,4 @@ igraph
 pandas
 seaborn
 tabulate
+networkx

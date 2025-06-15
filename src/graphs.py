@@ -290,6 +290,120 @@ def hoffman_singleton():
     )
     return graph
 
+# ############################################################################ #
+
+def d4k3():
+    """
+    Graph of order 41 found by Allwright 1992
+    """
+    graph = igraph.Graph(directed=True)
+    graph.add_vertices(41)
+    graph.add_edges([(i, i) for i in range(41)])
+    add_adjacents(graph,
+        [ (0, [1, 5, 25, 37])
+        , (1, [0, 2, 3, 4])
+        , (2, [1, 19, 23, 30])
+        , (3, [1, 24, 18, 12])
+        , (4, [1, 13, 35, 17])
+        , (5, [0, 6, 10, 34])
+        , (6, [5, 7, 8, 9])
+        , (7, [6, 28, 38, 24])
+        , (8, [6, 17, 23, 29])
+        , (9, [6, 22, 18, 30])
+        , (10, [5, 11, 15, 31])
+        , (11, [10, 12, 13, 14])
+        , (12, [3, 11, 29, 33])
+        , (13, [4, 11, 28, 22])
+        , (14, [11, 27, 38, 23])
+        , (15, [10, 20, 16, 37])
+        , (16, [15, 17, 18, 19])
+        , (17, [4, 8, 16, 32])
+        , (18, [3, 9, 16, 27])
+        , (19, [2, 16, 33, 28])
+        , (20, [15, 25, 21, 34])
+        , (21, [20, 22, 23, 24])
+        , (22, [9, 13, 21, 36])
+        , (23, [2, 8, 14, 21])
+        , (24, [3, 7, 21, 32])
+        , (25, [0, 20, 26, 31])
+        , (26, [25, 29, 28, 27])
+        , (27, [14, 18, 26, 35])
+        , (28, [7, 13, 19, 26])
+        , (29, [8, 12, 26, 36])
+        , (30, [2, 9, 31, 40])
+        , (31, [30, 32, 25, 10])
+        , (32, [17, 24, 31, 39])
+        , (33, [19, 34, 40, 12])
+        , (34, [33, 35, 20, 5])
+        , (35, [4, 27, 34, 39])
+        , (36, [22, 29, 37, 40])
+        , (37, [36, 38, 0, 15])
+        , (38, [7, 14, 37, 39])
+        , (39, [32, 40, 35, 38])
+        , (40, [33, 30, 39, 36])
+        ]
+    )
+    return graph
+
+# ############################################################################ #
+# D3K4
+
+def d3k4():
+    """
+    Graph of order 38 with degree 3 and diameter 4
+
+    This graph is described by Alegre et. al. in Alegre, Fiol, and Yebra,
+    Journal of Graph Theory, Vol 10 (1986), 219--224.
+
+    Note this is is not the original d3k4 graph of order 38 from Karl Doty
+    (1982). Buse proved in 2000 that the order of 38 is optimal for degree 3 and
+    diameter 4 in Buse, Discrete Applied Mathematics, Vol 101 (2000), 53--16.
+
+    Details:
+    * order: 38
+    * size: 57
+    * degree: 3
+    * diameter: 4
+    * average distance: 3.108
+    * regular: yes
+    """
+    graph = igraph.Graph(directed=True)
+    graph.add_vertices(38)
+    graph.add_edges([(i, i) for i in range(38)])
+    #  The construction is based on 5 copies of a cluster of 7 vertices
+    base = {
+        0: [1],
+        1: [0, 2, 3],
+        2: [1],
+        3: [1, 4],
+        4: [3, 5, 6],
+        5: [4],
+        6: [4],
+    }
+    for i in range(0,5):
+        for a, adjs in base.items():
+            for b in adjs:
+                graph.add_edge(a + i * 7, b + i * 7)
+    # The clusters are connected by the following edges
+    for i in range(0,5):
+        n = 7 * ((i + 2) % 5)
+        p = 7 * ((i + 3) % 5)
+        graph.add_edges([(i * 7, n + 6), (n + 6, i * 7)])
+        graph.add_edges([(i * 7, p + 6), (p + 6, i * 7)])
+    for i in range(0,5):
+        n = 7 * ((i + 1) % 5)
+        p = 7 * ((i + 4) % 5)
+        graph.add_edges([(i * 7 + 2, n + 5), (n + 5, i * 7 + 2)])
+        graph.add_edges([(i * 7 + 2, p + 5), (p + 5, i * 7 + 2)])
+    graph.add_edges([(35, 36), (36, 35)])
+    graph.add_edges([(36, 37), (37, 36)])
+    graph.add_edges([(0+3, 35), (35, 0+3)])
+    graph.add_edges([(7+3, 36), (36, 7+3)])
+    graph.add_edges([(14+3, 35), (35, 14+3)])
+    graph.add_edges([(21+3, 37), (37, 21+3)])
+    graph.add_edges([(28+3, 37), (37, 28+3)])
+
+    return graph
 
 # ############################################################################ #
 # Constants
@@ -298,3 +412,5 @@ Petersen = petersen()
 Twenty = twenty()
 HoffmanSingleton = hoffman_singleton()
 D4K4 = d4k4()
+D4K3 = d4k3()
+D3K4 = d3k4()
